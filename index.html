@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishtaha - Ovqat buyurtma qilish</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background-color: #f5f5f5; padding-bottom: 140px; }
+        .header { background-color: #FCE000; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; position: relative; }
+        .location { font-size: 14px; font-weight: bold; color: #000; margin-bottom: 8px; }
+        .search-box { width: 100%; padding: 12px; border-radius: 25px; border: none; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .banner { background-color: #fff; padding: 15px; margin: 15px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; }
+        .banner-text { font-weight: bold; font-size: 18px; color: #333; }
+        .section-title { margin: 25px 15px 10px 15px; font-size: 20px; font-weight: bold; color: #222; border-left: 5px solid #FCE000; padding-left: 10px; }
+        .section-title.empty-cat { display: none; }
+
+        /* Taomlar kartochkasi */
+        .food-card { background: white; padding: 15px; margin: 12px 15px; border-radius: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s; position: relative; }
+        .food-card.hidden { display: none; }
+        .food-image { width: 60px; height: 60px; flex-shrink: 0; border-radius: 12px; overflow: hidden; background: #fafafa; display: flex; align-items: center; justify-content: center; }
+        .food-image svg { width: 100%; height: 100%; }
+        .food-details { flex: 1; margin-left: 15px; min-width: 0; }
+        .food-title { font-weight: bold; font-size: 16px; color: #000; }
+        .food-price { color: #ff5500; font-weight: bold; margin-top: 5px; font-size: 15px; }
+        .btn-add { background: #FCE000; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+        .btn-add:active { transform: scale(0.95); }
+
+        /* Admin paneli tugmalari */
+        .admin-toggle { position: absolute; top: 12px; right: 15px; background: #000; color: #fff; border: none; padding: 6px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .admin-toggle.active { background: #ff5500; }
+        .price-edit-wrap { display: none; align-items: center; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+        body.admin-mode .price-edit-wrap { display: flex; }
+        body.admin-mode .food-price { display: none; }
+        body.admin-mode .food-card { outline: 2px dashed #007bff; }
+        .price-input { width: 90px; padding: 5px 8px; border: 1px solid #007bff; border-radius: 8px; font-size: 13px; }
+        .btn-save-price { background: #28a745; color: #fff; border: none; padding: 6px 10px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-save-price.saved { background: #6c757d; }
+        .btn-delete-food { display: none; background: #ff4d4d; color: #fff; border: none; padding: 6px 10px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        body.admin-mode .btn-delete-food { display: inline-block; }
+
+        /* Admin sozlamalari (Telegram + Yangi taom) */
+        .admin-settings { display: none; background: #1e1e1e; color: #fff; padding: 15px; margin: 15px; border-radius: 15px; }
+        body.admin-mode .admin-settings { display: block; }
+        .admin-settings h3 { font-size: 15px; margin-bottom: 10px; color: #FCE000; }
+        .admin-settings .form-group { margin-bottom: 10px; }
+        .admin-settings label { display: block; font-size: 12px; margin-bottom: 4px; color: #ccc; }
+        .admin-settings input, .admin-settings select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #2b2b2b; color: #fff; font-size: 13px; }
+        .btn-save-settings { background: #FCE000; border: none; padding: 8px 16px; border-radius: 15px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 5px; }
+        .btn-add-food { background: #28a745; border: none; padding: 8px 16px; border-radius: 15px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 5px; color: #fff; }
+        .admin-settings-hint { font-size: 11px; color: #999; margin-top: 8px; line-height: 1.5; }
+        .admin-divider { border-top: 1px solid #444; margin: 15px 0; }
+
+        /* Savatcha ro'yxati */
+        .cart-list-container { background: white; padding: 15px; margin: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .cart-empty-text { color: #888; text-align: center; font-style: italic; font-size: 14px; padding: 10px 0; }
+        .cart-item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #eee; }
+        .cart-item-row:last-child { border-bottom: none; }
+        .cart-item-info { font-size: 15px; font-weight: bold; color: #333; }
+        .cart-item-price { color: #ff5500; font-size: 14px; margin-top: 2px; }
+        .cart-item-controls { display: flex; align-items: center; gap: 8px; }
+        .qty-btn { background: #eee; border: none; width: 26px; height: 26px; border-radius: 50%; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .qty-btn:active { transform: scale(0.9); }
+        .qty-value { font-weight: bold; font-size: 14px; min-width: 16px; text-align: center; }
+        .btn-item-remove { background: #ff4d4d; color: white; border: none; padding: 6px 10px; border-radius: 15px; font-size: 11px; font-weight: bold; cursor: pointer; }
+
+        /* Forma */
+        .client-form { background: white; padding: 20px; margin: 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #333; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; box-sizing: border-box; }
+        .form-control.invalid { border-color: #ff4d4d; }
+        .btn-location { background: #007bff; color: #fff; border: none; padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 6px; }
+        .btn-location.located { background: #28a745; }
+        .location-result { font-size: 12px; color: #28a745; margin-top: 6px; display: none; }
+        .location-result.show { display: block; }
+        .location-result a { color: #007bff; }
+
+        /* Pastki fiksirlangan panel */
+        .footer-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-top: 1px solid #eee; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); box-sizing: border-box; z-index: 9999; }
+        .cart-status { font-size: 15px; font-weight: bold; color: #333; line-height: 1.4; }
+        .btn-order { background: #ff5500; color: white; border: none; padding: 14px 30px; border-radius: 25px; font-weight: bold; font-size: 15px; cursor: pointer; text-decoration: none; display: inline-block; box-shadow: 0 4px 6px rgba(255, 85, 0, 0.2); }
+        .btn-order:active { transform: scale(0.97); }
+
+        /* Modal (chek) */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 10000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.show { display: flex; }
+        .receipt-box { background: #fff; width: 100%; max-width: 380px; border-radius: 15px; padding: 20px; max-height: 85vh; overflow-y: auto; font-family: 'Courier New', monospace; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .receipt-header { text-align: center; border-bottom: 2px dashed #333; padding-bottom: 10px; margin-bottom: 10px; }
+        .receipt-header h2 { font-size: 20px; margin-bottom: 4px; }
+        .receipt-row { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; }
+        .receipt-divider { border-top: 1px dashed #999; margin: 8px 0; }
+        .receipt-total { display: flex; justify-content: space-between; font-size: 17px; font-weight: bold; padding-top: 8px; }
+        .receipt-info { font-size: 13px; margin-top: 10px; color: #444; }
+        .receipt-info div { margin-bottom: 3px; }
+        .receipt-info a { color: #007bff; }
+        .receipt-telegram-status { text-align: center; font-size: 12px; margin-top: 10px; padding: 8px; border-radius: 8px; }
+        .receipt-telegram-status.ok { background: #d4edda; color: #155724; }
+        .receipt-telegram-status.fail { background: #f8d7da; color: #721c24; }
+        .receipt-thanks { text-align: center; margin-top: 15px; font-size: 13px; color: #888; }
+        .btn-close-receipt { width: 100%; margin-top: 15px; background: #FCE000; border: none; padding: 12px; border-radius: 20px; font-weight: bold; font-size: 14px; cursor: pointer; }
+
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 10001; opacity: 0; pointer-events: none; transition: opacity 0.25s; text-align: center; max-width: 90%; }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="location">📍 "Ishtaha" Onlayn Restorani</div>
+        <button class="admin-toggle" id="admin-btn" onclick="toggleAdminMode()">⚙️ Admin</button>
+        <input type="text" class="search-box" id="search-input" onkeyup="searchFood()" placeholder="Taom qidirish...">
+    </div>
+
+    <div class="banner">
+        <div class="banner-text">Ishtaha Ochilsin! 🍕<div style="font-size: 12px; font-weight: normal; margin-top: 5px; color: #666;">Tezkor onlayn buyurtma</div></div>
+        <div style="font-size: 45px;">🍱</div>
+    </div>
+
+    <!-- ADMIN SOZLAMALARI -->
+    <div class="admin-settings" id="admin-settings">
+        <h3>➕ Yangi taom qo'shish</h3>
+        <div class="form-group">
+            <label>Taom nomi:</label>
+            <input type="text" id="new-food-name" placeholder="Masalan: Margarita pitsa">
+        </div>
+        <div class="form-group">
+            <label>Narxi (so'm):</label>
+            <input type="number" id="new-food-price" placeholder="25000">
+        </div>
+        <div class="form-group">
+            <label>Guruh (kategoriya):</label>
+            <select id="new-food-category">
+                <option value="fastfood">🍔 Fast-Food</option>
+                <option value="milliy">🇺🇿 Milliy taomlar</option>
+                <option value="salatlar">🥗 Salatlar</option>
+                <option value="ichimliklar">🥤 Ichimliklar</option>
+                <option value="shirinliklar">🍰 Shirinliklar</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Rasm ko'rinishi:</label>
+            <select id="new-food-icon">
+                <option value="burger">🍔 Burger ko'rinishi</option>
+                <option value="lavash">🌯 Lavash ko'rinishi</option>
+                <option value="osh">🍲 Osh/Plov ko'rinishi</option>
+                <option value="somsa">🥟 Somsa ko'rinishi</option>
+                <option value="salad">🥗 Salat ko'rinishi</option>
+                <option value="drink">🥤 Ichimlik ko'rinishi</option>
+                <option value="dessert">🍰 Shirinlik ko'rinishi</option>
+                <option value="plate">🍽 Umumiy taom ko'rinishi</option>
+            </select>
+        </div>
+        <button class="btn-add-food" onclick="addNewFood()">Menyuga qo'shish</button>
+
+        <div class="admin-divider"></div>
+
+        <h3>📲 Telegram bog'lanish sozlamalari</h3>
+        <div class="form-group">
+            <label>Bot Token (BotFather'dan olingan):</label>
+            <input type="text" id="tg-bot-token" placeholder="123456789:AAExxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+        </div>
+        <div class="form-group">
+            <label>Kanal Chat ID:</label>
+            <input type="text" id="tg-chat-id" placeholder="@ishtaha_taomlar">
+        </div>
+        <button class="btn-save-settings" onclick="saveTelegramSettings()">Saqlash</button>
+        <div class="admin-settings-hint">
+            Kanal ulandi: <b>t.me/ishtaha_taomlar</b><br>
+            1) @BotFather'ga <code>/newbot</code> yozib bot yarating, tokenni to'liq nusxalang.<br>
+            2) Botni <b>@ishtaha_taomlar</b> kanaliga administrator qilib qo'shing ("Post Messages" huquqi bilan).<br>
+            3) Tokenni shu yerga joylashtirib "Saqlash"ni bosing — token shu sahifa ochiq turgan sessiyada ishlaydi.<br>
+            Sahifani qayta yuklasangiz (refresh) token o'chib qoladi — doimiy ishlashi uchun kod ichidagi <code>TELEGRAM_BOT_TOKEN</code> qatoriga tokeningizni yozib qo'ying.
+        </div>
+    </div>
+
+    <!-- TAOMLAR (dinamik ravishda skript orqali to'ldiriladi) -->
+    <div id="food-list"></div>
+
+    <!-- RO'YXAT -->
+    <div class="section-title">🛒 Savatdagi taomlar ro'yxati</div>
+    <div class="cart-list-container">
+        <div id="cart-items-list" class="cart-empty-text">Savat bo'sh. Taom qo'shing...</div>
+    </div>
+
+    <!-- FORMA -->
+    <div class="section-title">👤 Buyurtmachining ma'lumotlari</div>
+    <div class="client-form">
+        <div class="form-group">
+            <label>Ismingiz:</label>
+            <input type="text" id="client-name" class="form-control" placeholder="Ismingizni yozing...">
+        </div>
+        <div class="form-group">
+            <label>Telefon raqamingiz:</label>
+            <input type="tel" id="client-phone" class="form-control" placeholder="Masalan: +998901234567">
+        </div>
+        <div class="form-group">
+            <label>Yetkazib berish manzili:</label>
+            <input type="text" id="client-address" class="form-control" placeholder="Uy manzili yoki mo'ljal...">
+            <button type="button" class="btn-location" id="location-btn" onclick="getLocation()">📍 Joylashuvimni aniqlash</button>
+            <div class="location-result" id="location-result"></div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-nav">
+        <div class="cart-status">
+            Savat: <span id="cart-count">0</span> taom<br>
+            Jami: <span id="cart-total" style="color: #ff5500;">0</span> so'm
+        </div>
+        <a href="javascript:void(0);" id="order-link" class="btn-order" onclick="checkCart(event)">Buyurtma berish</a>
+    </div>
+
+    <!-- CHEK MODAL -->
+    <div class="modal-overlay" id="receipt-modal">
+        <div class="receipt-box">
+            <div class="receipt-header">
+                <h2>🧾 "Ishtaha" CHEK</h2>
+                <div id="receipt-order-id" style="font-size: 12px; color: #666;"></div>
+                <div id="receipt-date" style="font-size: 12px; color: #666;"></div>
+            </div>
+            <div id="receipt-items"></div>
+            <div class="receipt-divider"></div>
+            <div class="receipt-total">
+                <span>JAMI:</span>
+                <span id="receipt-total-amount">0 so'm</span>
+            </div>
+            <div class="receipt-info" id="receipt-client-info"></div>
+            <div class="receipt-telegram-status" id="receipt-telegram-status"></div>
+            <div class="receipt-thanks">Buyurtmangiz uchun rahmat! 🙏<br>Tez orada siz bilan bog'lanamiz.</div>
+            <button class="btn-close-receipt" onclick="closeReceipt()">Yopish</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        /* ====== TELEGRAM SOZLAMALARI ======
+           Doimiy ishlashi uchun tokeningizni shu yerga yozib qo'ying. */
+        let TELEGRAM_BOT_TOKEN = "8926467537:AAEsRLp2ytfmiLsEEEvu8anh7vi9SyGWEsE";
+        let TELEGRAM_CHAT_ID = "@ishtaha_taomlar";
+
+        /* ====== KATEGORIYALAR ====== */
+        const CATEGORIES = [
+            { key: 'fastfood', title: '🍔 Fast-Food' },
+            { key: 'milliy', title: "🇺🇿 Milliy taomlar" },
+            { key: 'salatlar', title: '🥗 Salatlar' },
+            { key: 'ichimliklar', title: '🥤 Ichimliklar' },
+            { key: 'shirinliklar', title: '🍰 Shirinliklar' }
+        ];
+
+        /* ====== TAOMLAR MA'LUMOTLARI (dinamik massiv) ====== */
+        let nextFoodNum = 5;
+        let FOOD_ITEMS = [
+            { id: 'food-1', name: 'Cheeseburger', price: 28000, category: 'fastfood', icon: 'burger' },
+            { id: 'food-2', name: 'Lavash Big', price: 34000, category: 'fastfood', icon: 'lavash' },
+            { id: 'food-3', name: "To'y Oshi", price: 35000, category: 'milliy', icon: 'osh' },
+            { id: 'food-4', name: "Go'shtli Somsa", price: 10000, category: 'milliy', icon: 'somsa' },
+            { id: 'food-5', name: 'Achchiq-chuchuk salat', price: 16000, category: 'salatlar', icon: 'salad' },
+            { id: 'food-6', name: 'Sezar salat', price: 24000, category: 'salatlar', icon: 'salad' },
+            { id: 'food-7', name: "Kola 0.5L", price: 9000, category: 'ichimliklar', icon: 'drink' },
+            { id: 'food-8', name: 'Issiq choy (choynak)', price: 6000, category: 'ichimliklar', icon: 'drink' },
+            { id: 'food-9', name: 'Napoleon tort', price: 18000, category: 'shirinliklar', icon: 'dessert' },
+            { id: 'food-10', name: 'Muzqaymoq', price: 12000, category: 'shirinliklar', icon: 'dessert' }
+        ];
+        nextFoodNum = 11;
+
+        let cart = {};          // { 'food-1': { name, price, qty }, ... }
+        let adminMode = false;
+        let orderCounter = 1000;
+        let userLocation = null;
+
+        /* ---------- IKONKALAR (SVG) ---------- */
+        function getIconSVG(type) {
+            const icons = {
+                burger: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="50" cy="30" rx="34" ry="14" fill="#e8a33d"/>
+                    <ellipse cx="50" cy="27" rx="34" ry="12" fill="#f2b84f"/>
+                    <circle cx="34" cy="24" r="1.6" fill="#fff3d6"/><circle cx="46" cy="20" r="1.6" fill="#fff3d6"/>
+                    <circle cx="58" cy="23" r="1.6" fill="#fff3d6"/><circle cx="66" cy="27" r="1.6" fill="#fff3d6"/>
+                    <path d="M15 39 Q50 32 85 39 L83 46 Q50 40 17 46 Z" fill="#3fa34d"/>
+                    <rect x="17" y="45" width="66" height="10" rx="3" fill="#7a3b1e"/>
+                    <rect x="16" y="55" width="68" height="9" rx="2" fill="#f6c945"/>
+                    <path d="M17 63 Q50 58 83 63 L82 69 Q50 65 18 69 Z" fill="#c0392b"/>
+                    <path d="M13 68 Q50 60 87 68 L85 80 Q50 88 15 80 Z" fill="#e8a33d"/>
+                </svg>`,
+                lavash: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M30 15 Q20 50 40 90 L65 85 Q80 45 60 12 Z" fill="#f2c869"/>
+                    <path d="M35 22 Q28 50 43 82" stroke="#e0a83a" stroke-width="2" fill="none"/>
+                    <path d="M45 15 Q42 50 52 88" stroke="#e0a83a" stroke-width="2" fill="none"/>
+                    <path d="M38 35 Q50 32 60 37" stroke="#c0392b" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <path d="M37 47 Q50 44 61 49" stroke="#3fa34d" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <path d="M36 59 Q50 56 62 61" stroke="#7a3b1e" stroke-width="5" fill="none" stroke-linecap="round"/>
+                    <path d="M37 71 Q50 68 61 73" stroke="#e67e22" stroke-width="4" fill="none" stroke-linecap="round"/>
+                </svg>`,
+                osh: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="50" cy="72" rx="42" ry="12" fill="#d4762a"/>
+                    <ellipse cx="50" cy="68" rx="42" ry="12" fill="#e88a35"/>
+                    <ellipse cx="50" cy="60" rx="40" ry="16" fill="#f2c14e"/>
+                    <ellipse cx="35" cy="52" rx="5" ry="3" fill="#e07b1e" transform="rotate(-20 35 52)"/>
+                    <ellipse cx="55" cy="48" rx="5" ry="3" fill="#e07b1e" transform="rotate(15 55 48)"/>
+                    <ellipse cx="65" cy="56" rx="5" ry="3" fill="#e07b1e" transform="rotate(-10 65 56)"/>
+                    <ellipse cx="42" cy="58" rx="6" ry="4" fill="#8a4a1e"/><ellipse cx="60" cy="62" rx="6" ry="4" fill="#8a4a1e"/>
+                    <circle cx="48" cy="46" r="3" fill="#f4e3b2"/><circle cx="58" cy="44" r="2.5" fill="#f4e3b2"/>
+                </svg>`,
+                somsa: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,10 90,85 10,85" fill="#c8862f"/>
+                    <polygon points="50,16 84,80 16,80" fill="#e0a04a"/>
+                    <path d="M50 16 L58 78" stroke="#a8681f" stroke-width="2" fill="none"/>
+                    <path d="M50 16 L42 78" stroke="#a8681f" stroke-width="2" fill="none"/>
+                    <circle cx="35" cy="55" r="1.8" fill="#fff3d6"/><circle cx="50" cy="65" r="1.8" fill="#fff3d6"/>
+                    <circle cx="63" cy="52" r="1.8" fill="#fff3d6"/><circle cx="44" cy="40" r="1.8" fill="#fff3d6"/>
+                    <circle cx="58" cy="38" r="1.8" fill="#fff3d6"/>
+                </svg>`,
+                salad: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="50" cy="70" rx="38" ry="14" fill="#d9d9d9"/>
+                    <ellipse cx="50" cy="65" rx="38" ry="14" fill="#f0f0f0"/>
+                    <path d="M20 60 Q28 40 40 52 Q45 35 55 50 Q65 38 72 55 Q80 45 82 60 Q60 50 50 58 Q35 48 20 60 Z" fill="#4caf50"/>
+                    <path d="M25 58 Q32 45 42 54" stroke="#2e7d32" stroke-width="1.5" fill="none"/>
+                    <circle cx="42" cy="55" r="5" fill="#e74c3c"/>
+                    <circle cx="60" cy="52" r="4" fill="#e74c3c"/>
+                    <ellipse cx="55" cy="62" rx="5" ry="3" fill="#f4d35e"/>
+                </svg>`,
+                drink: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M32 25 L68 25 L62 88 L38 88 Z" fill="#bfe3f7"/>
+                    <path d="M35 40 L65 40 L61 85 L39 85 Z" fill="#3fa9dc"/>
+                    <rect x="47" y="8" width="6" height="30" rx="3" fill="#e74c3c" transform="rotate(12 50 20)"/>
+                    <ellipse cx="50" cy="25" rx="18" ry="5" fill="#eaf6fd"/>
+                    <circle cx="43" cy="55" r="3" fill="#ffffff" opacity="0.6"/>
+                    <circle cx="57" cy="65" r="2.5" fill="#ffffff" opacity="0.6"/>
+                </svg>`,
+                dessert: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="20,85 80,85 55,25" fill="#f7d9a0"/>
+                    <polygon points="26,85 74,85 55,35" fill="#e8b25a"/>
+                    <rect x="30" y="70" width="40" height="8" fill="#fff3d6"/>
+                    <rect x="34" y="55" width="32" height="7" fill="#fff3d6"/>
+                    <circle cx="55" cy="22" r="5" fill="#e74c3c"/>
+                </svg>`,
+                plate: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="50" cy="55" rx="40" ry="18" fill="#e6e6e6"/>
+                    <ellipse cx="50" cy="52" rx="40" ry="18" fill="#f7f7f7"/>
+                    <ellipse cx="50" cy="52" rx="26" ry="11" fill="#f2c14e"/>
+                    <ellipse cx="43" cy="48" rx="6" ry="4" fill="#e67e22"/>
+                    <ellipse cx="58" cy="55" rx="5" ry="3" fill="#c0392b"/>
+                </svg>`
+            };
+            return icons[type] || icons.plate;
+        }
+
+        /* ---------- TOAST ---------- */
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        /* ---------- MENYUNI CHIZISH ---------- */
+        function renderFoodList() {
+            const container = document.getElementById('food-list');
+            container.innerHTML = '';
+
+            CATEGORIES.forEach(cat => {
+                const items = FOOD_ITEMS.filter(f => f.category === cat.key);
+
+                const titleEl = document.createElement('div');
+                titleEl.className = 'section-title' + (items.length === 0 ? ' empty-cat' : '');
+                titleEl.textContent = cat.title;
+                container.appendChild(titleEl);
+
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'food-card';
+                    card.setAttribute('data-name', item.name.toLowerCase());
+                    card.id = item.id;
+                    card.innerHTML = `
+                        <div class="food-image">${getIconSVG(item.icon)}</div>
+                        <div class="food-details">
+                            <div class="food-title">${item.name}</div>
+                            <div class="food-price" id="price-${item.id}">${item.price.toLocaleString('ru-RU')} so'm</div>
+                            <div class="price-edit-wrap">
+                                <input type="number" class="price-input" id="input-${item.id}" value="${item.price}">
+                                <button class="btn-save-price" onclick="savePrice('${item.id}')">Saqlash</button>
+                                <button class="btn-delete-food" onclick="deleteFood('${item.id}')">🗑 O'chirish</button>
+                            </div>
+                        </div>
+                        <button class="btn-add" onclick="addToCart('${item.id}')">+ Qo'shish</button>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        }
+
+        /* ---------- ADMIN: YANGI TAOM QO'SHISH ---------- */
+        function addNewFood() {
+            const name = document.getElementById('new-food-name').value.trim();
+            const price = parseInt(document.getElementById('new-food-price').value, 10);
+            const category = document.getElementById('new-food-category').value;
+            const icon = document.getElementById('new-food-icon').value;
+
+            if (!name) { alert("Iltimos, taom nomini kiriting."); return; }
+            if (isNaN(price) || price <= 0) { alert("Iltimos, to'g'ri narx kiriting."); return; }
+
+            const id = 'food-' + nextFoodNum;
+            nextFoodNum++;
+            FOOD_ITEMS.push({ id, name, price, category, icon });
+
+            document.getElementById('new-food-name').value = '';
+            document.getElementById('new-food-price').value = '';
+
+            renderFoodList();
+            showToast(name + " menyuga qo'shildi ✅");
+        }
+
+        /* ---------- ADMIN: TAOMNI O'CHIRISH ---------- */
+        function deleteFood(id) {
+            const item = FOOD_ITEMS.find(f => f.id === id);
+            if (!item) return;
+            if (!confirm(`"${item.name}" ni menyudan o'chirishni tasdiqlaysizmi?`)) return;
+
+            FOOD_ITEMS = FOOD_ITEMS.filter(f => f.id !== id);
+            if (cart[id]) delete cart[id];
+
+            renderFoodList();
+            updateCartUI();
+            showToast(item.name + " menyudan o'chirildi");
+        }
+
+        /* ---------- ADMIN REJIM ---------- */
+        function toggleAdminMode() {
+            adminMode = !adminMode;
+            document.body.classList.toggle('admin-mode', adminMode);
+            const btn = document.getElementById('admin-btn');
+            btn.classList.toggle('active', adminMode);
+            btn.textContent = adminMode ? '✅ Admin (yoniq)' : '⚙️ Admin';
+            if (adminMode) {
+                document.getElementById('tg-bot-token').value = TELEGRAM_BOT_TOKEN;
+                document.getElementById('tg-chat-id').value = TELEGRAM_CHAT_ID;
+            }
+            showToast(adminMode ? 'Admin rejimi yoqildi' : 'Admin rejimi o\'chirildi');
+        }
+
+        function saveTelegramSettings() {
+            TELEGRAM_BOT_TOKEN = document.getElementById('tg-bot-token').value.trim();
+            TELEGRAM_CHAT_ID = document.getElementById('tg-chat-id').value.trim();
+            showToast('Telegram sozlamalari saqlandi ✅');
+        }
+
+        /* ---------- NARXNI SAQLASH ---------- */
+        function savePrice(foodId) {
+            const item = FOOD_ITEMS.find(f => f.id === foodId);
+            if (!item) return;
+            const input = document.getElementById('input-' + foodId);
+            const parsed = parseInt(input.value, 10);
+
+            if (isNaN(parsed) || parsed <= 0) {
+                alert("Iltimos, to'g'ri narx kiriting.");
+                return;
+            }
+
+            item.price = parsed;
+            document.getElementById('price-' + foodId).textContent = parsed.toLocaleString('ru-RU') + " so'm";
+
+            if (cart[foodId]) {
+                cart[foodId].price = parsed;
+                updateCartUI();
+            }
+
+            const card = document.getElementById(foodId);
+            const saveBtn = card.querySelector('.btn-save-price');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = '✓ Saqlandi';
+            saveBtn.classList.add('saved');
+            setTimeout(() => {
+                saveBtn.textContent = originalText;
+                saveBtn.classList.remove('saved');
+            }, 1200);
+
+            showToast(item.name + ' narxi ' + parsed.toLocaleString('ru-RU') + " so'mga o'zgartirildi");
+        }
+
+        /* ---------- QIDIRUV ---------- */
+        function searchFood() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            document.querySelectorAll('.food-card').forEach(card => {
+                const name = card.getAttribute('data-name');
+                card.classList.toggle('hidden', !name.includes(query));
+            });
+        }
+
+        /* ---------- LOKATSIYA ---------- */
+        function getLocation() {
+            if (!navigator.geolocation) {
+                showToast("Brauzeringiz lokatsiyani qo'llab-quvvatlamaydi");
+                return;
+            }
+            const btn = document.getElementById('location-btn');
+            btn.textContent = '⏳ Aniqlanmoqda...';
+
+            navigator.geolocation.getCurrentPosition(
+                function (pos) {
+                    userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    btn.textContent = '✅ Joylashuv aniqlandi';
+                    btn.classList.add('located');
+                    const resultEl = document.getElementById('location-result');
+                    resultEl.classList.add('show');
+                    resultEl.innerHTML = 'Koordinatalar: ' + userLocation.lat.toFixed(5) + ', ' + userLocation.lng.toFixed(5) +
+                        ' — <a href="https://maps.google.com/?q=' + userLocation.lat + ',' + userLocation.lng + '" target="_blank">Xaritada ko\'rish</a>';
+                    showToast('Joylashuvingiz aniqlandi 📍');
+                },
+                function (err) {
+                    btn.textContent = '📍 Joylashuvimni aniqlash';
+                    showToast("Joylashuvni aniqlab bo'lmadi. Ruxsat berilganini tekshiring.");
+                }
+            );
+        }
+
+        /* ---------- SAVAT ---------- */
+        function addToCart(id) {
+            const info = FOOD_ITEMS.find(f => f.id === id);
+            if (!info) return;
+            if (cart[id]) {
+                cart[id].qty += 1;
+            } else {
+                cart[id] = { name: info.name, price: info.price, qty: 1 };
+            }
+            updateCartUI();
+            showToast(info.name + " savatga qo'shildi");
+        }
+
+        function increaseQty(id) {
+            cart[id].qty += 1;
+            updateCartUI();
+        }
+
+        function decreaseQty(id) {
+            cart[id].qty -= 1;
+            if (cart[id].qty <= 0) delete cart[id];
+            updateCartUI();
+        }
+
+        function removeFromCart(id) {
+            delete cart[id];
+            updateCartUI();
+        }
+
+        function getCartTotal() {
+            let total = 0;
+            Object.values(cart).forEach(item => total += item.price * item.qty);
+            return total;
+        }
+
+        function getCartCount() {
+            let count = 0;
+            Object.values(cart).forEach(item => count += item.qty);
+            return count;
+        }
+
+        function updateCartUI() {
+            const total = getCartTotal();
+            document.getElementById('cart-count').innerText = getCartCount();
+            document.getElementById('cart-total').innerText = total.toLocaleString('ru-RU');
+
+            let listDiv = document.getElementById('cart-items-list');
+            const ids = Object.keys(cart);
+
+            if (ids.length === 0) {
+                listDiv.className = "cart-empty-text";
+                listDiv.innerHTML = "Savat bo'sh. Taom qo'shing...";
+                return;
+            }
+
+            listDiv.className = "";
+            listDiv.innerHTML = "";
+
+            ids.forEach(id => {
+                const item = cart[id];
+                const subtotal = item.price * item.qty;
+                let row = document.createElement('div');
+                row.className = 'cart-item-row';
+                row.innerHTML = `
+                    <div class="cart-item-info">
+                        <div>${item.name}</div>
+                        <div class="cart-item-price">${item.price.toLocaleString('ru-RU')} so'm x ${item.qty} = ${subtotal.toLocaleString('ru-RU')} so'm</div>
+                    </div>
+                    <div class="cart-item-controls">
+                        <button class="qty-btn" onclick="decreaseQty('${id}')">−</button>
+                        <span class="qty-value">${item.qty}</span>
+                        <button class="qty-btn" onclick="increaseQty('${id}')">+</button>
+                        <button class="btn-item-remove" onclick="removeFromCart('${id}')">O'chirish</button>
+                    </div>
+                `;
+                listDiv.appendChild(row);
+            });
+        }
+
+        /* ---------- BUYURTMA / CHEK ---------- */
+        function checkCart(event) {
+            event.preventDefault();
+
+            if (Object.keys(cart).length === 0) {
+                alert("Savatingiz bo'sh! Avval taom tanlang.");
+                return;
+            }
+
+            const name = document.getElementById('client-name').value.trim();
+            const phone = document.getElementById('client-phone').value.trim();
+            const address = document.getElementById('client-address').value.trim();
+
+            let valid = true;
+            [['client-name', name], ['client-phone', phone], ['client-address', address]].forEach(([id, val]) => {
+                document.getElementById(id).classList.toggle('invalid', val === '');
+                if (val === '') valid = false;
+            });
+
+            if (!valid) {
+                alert("Iltimos, ism, telefon va manzilni to'liq kiriting.");
+                return;
+            }
+
+            showReceipt(name, phone, address);
+        }
+
+        function showReceipt(name, phone, address) {
+            orderCounter++;
+            const orderId = orderCounter;
+            const dateStr = new Date().toLocaleString('uz-UZ');
+
+            document.getElementById('receipt-order-id').textContent = '№ ' + orderId;
+            document.getElementById('receipt-date').textContent = dateStr;
+
+            const itemsDiv = document.getElementById('receipt-items');
+            itemsDiv.innerHTML = '';
+            Object.values(cart).forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'receipt-row';
+                row.innerHTML = `<span>${item.name} x${item.qty}</span><span>${(item.price * item.qty).toLocaleString('ru-RU')} so'm</span>`;
+                itemsDiv.appendChild(row);
+            });
+
+            const total = getCartTotal();
+            document.getElementById('receipt-total-amount').textContent = total.toLocaleString('ru-RU') + " so'm";
+
+            let locationHtml = '';
+            if (userLocation) {
+                locationHtml = `<div>📍 <a href="https://maps.google.com/?q=${userLocation.lat},${userLocation.lng}" target="_blank">Lokatsiyani xaritada ko'rish</a></div>`;
+            }
+
+            document.getElementById('receipt-client-info').innerHTML = `
+                <div style="margin-bottom:6px;"><b>Yetkazib beruvchi:</b> "Ishtaha"</div>
+                <div style="margin-bottom:4px;"><b>Buyurtmachi:</b></div>
+                <div>Ism: ${name}</div>
+                <div>Telefon: ${phone}</div>
+                <div>Manzili: ${address}</div>
+                ${locationHtml}
+            `;
+
+            const statusEl = document.getElementById('receipt-telegram-status');
+            statusEl.className = 'receipt-telegram-status';
+            statusEl.textContent = '📤 Telegram kanaliga yuborilmoqda...';
+
+            document.getElementById('receipt-modal').classList.add('show');
+
+            sendOrderToTelegram(orderId, dateStr, name, phone, address, total, statusEl);
+        }
+
+        function buildTelegramText(orderId, dateStr, name, phone, address, total) {
+            let text = `🧾 YANGI BUYURTMA #${orderId}\n`;
+            text += `🕒 ${dateStr}\n\n`;
+            text += `Yetkazib beruvchi: "Ishtaha"\n\n`;
+            text += `Buyurtmachi:\n`;
+            text += `Ism: ${name}\n`;
+            text += `Telefon: ${phone}\n`;
+            text += `Manzili: ${address}\n`;
+            if (userLocation) {
+                text += `📍 Lokatsiya: https://maps.google.com/?q=${userLocation.lat},${userLocation.lng}\n`;
+            }
+            text += `\n🍽 Taomlar:\n`;
+            Object.values(cart).forEach(item => {
+                text += `• ${item.name} x${item.qty} — ${(item.price * item.qty).toLocaleString('ru-RU')} so'm\n`;
+            });
+            text += `\n💰 JAMI: ${total.toLocaleString('ru-RU')} so'm`;
+            return text;
+        }
+
+        async function sendOrderToTelegram(orderId, dateStr, name, phone, address, total, statusEl) {
+            if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+                statusEl.classList.add('fail');
+                statusEl.textContent = "⚠️ Bot Token kiritilmagan (Admin rejimida to'ldiring)";
+                return;
+            }
+
+            const text = buildTelegramText(orderId, dateStr, name, phone, address, total);
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    statusEl.classList.add('ok');
+                    statusEl.textContent = '✅ Chek Telegram kanaliga yuborildi';
+                } else {
+                    statusEl.classList.add('fail');
+                    statusEl.textContent = '⚠️ Yuborilmadi: ' + (data.description || "noma'lum xatolik");
+                }
+            } catch (err) {
+                statusEl.classList.add('fail');
+                if (location.protocol === 'file:') {
+                    statusEl.textContent = "⚠️ Bu fayl telefonda mahalliy (file://) rejimda ochilgani uchun Telegram'ga yubora olmadi. Saytni internetga (hosting'ga) joylashtirgach ishlaydi.";
+                } else {
+                    statusEl.textContent = "⚠️ Yuborilmadi: " + (err.message || "tarmoq xatosi");
+                }
+            }
+        }
+
+        function closeReceipt() {
+            document.getElementById('receipt-modal').classList.remove('show');
+            cart = {};
+            updateCartUI();
+            document.getElementById('client-name').value = '';
+            document.getElementById('client-phone').value = '';
+            document.getElementById('client-address').value = '';
+            userLocation = null;
+            const locBtn = document.getElementById('location-btn');
+            locBtn.textContent = '📍 Joylashuvimni aniqlash';
+            locBtn.classList.remove('located');
+            document.getElementById('location-result').classList.remove('show');
+            ['client-name', 'client-phone', 'client-address'].forEach(id =>
+                document.getElementById(id).classList.remove('invalid')
+            );
+        }
+
+        /* ---------- BOSHLANG'ICH CHIZISH ---------- */
+        renderFoodList();
+    </script>
+</body>
+</html>

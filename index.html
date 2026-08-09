@@ -134,36 +134,50 @@
     <div class="login-overlay" id="login-overlay">
         <div class="login-box">
             <div class="login-logo">🍽️</div>
-            <h2>"Ishtaha" ga xush kelibsiz</h2>
+            <h2 data-i18n="login_welcome">"Ishtaha" ga xush kelibsiz</h2>
 
             <div class="login-step active" id="login-step-phone">
-                <p>Davom etish uchun telefon raqamingizni kiriting</p>
+                <div style="display:flex; justify-content:center; gap:8px; margin-bottom:16px;">
+                    <button type="button" class="lang-quick-btn" onclick="setLanguage('uz')" style="background:#f0f0f0; border:none; padding:6px 12px; border-radius:15px; font-size:12px; font-weight:bold; cursor:pointer;">🇺🇿 UZ</button>
+                    <button type="button" class="lang-quick-btn" onclick="setLanguage('ru')" style="background:#f0f0f0; border:none; padding:6px 12px; border-radius:15px; font-size:12px; font-weight:bold; cursor:pointer;">🇷🇺 RU</button>
+                    <button type="button" class="lang-quick-btn" onclick="setLanguage('en')" style="background:#f0f0f0; border:none; padding:6px 12px; border-radius:15px; font-size:12px; font-weight:bold; cursor:pointer;">🇬🇧 EN</button>
+                </div>
+                <p data-i18n="login_phone_prompt">Davom etish uchun telefon raqamingizni kiriting</p>
                 <input type="tel" id="login-phone" placeholder="+998901234567">
-                <button class="btn-login-action" onclick="sendLoginCode()">Kod yuborish</button>
+                <button class="btn-login-action" onclick="sendLoginCode()" data-i18n="login_send_code">Kod yuborish</button>
             </div>
 
             <div class="login-step" id="login-step-code">
-                <p>Telefoningizga yuborilgan 4 xonali kodni kiriting</p>
+                <p data-i18n="login_code_prompt">Telefoningizga yuborilgan 4 xonali kodni kiriting</p>
                 <div id="login-demo-code-box" style="background:#fff8d6; border:2px dashed #FCE000; border-radius:12px; padding:12px; margin-bottom:14px; font-size:15px; font-weight:bold; color:#333;"></div>
                 <input type="tel" id="login-code" maxlength="4" placeholder="0000">
-                <button class="btn-login-action" onclick="verifyLoginCode()">Tasdiqlash</button>
-                <div class="login-resend" onclick="sendLoginCode()">Kodni qayta yuborish</div>
+                <button class="btn-login-action" onclick="verifyLoginCode()" data-i18n="login_verify">Tasdiqlash</button>
+                <div class="login-resend" onclick="sendLoginCode()" data-i18n="login_resend">Kodni qayta yuborish</div>
             </div>
 
-            <div class="login-demo-note">
+            <div class="login-demo-note" data-i18n="login_demo_note">
                 Eslatma: bu DEMO rejim — haqiqiy SMS xizmati (Eskiz.uz va h.k.) ulanmaguncha kod yuqorida ko'rsatiladi, telefonga real SMS kelmaydi.
             </div>
         </div>
     </div>
 
     <div class="header">
-        <div class="location" id="header-title">📍 "Ishtaha" Onlayn Restorani</div>
-        <button class="admin-toggle" id="contact-btn" onclick="openContactModal()">📞 Biz bilan bog'lanish</button>
-        <input type="text" class="search-box" id="search-input" onkeyup="searchFood()" placeholder="Taom qidirish...">
+        <button id="back-btn" onclick="reopenLogin()" style="position:absolute; top:12px; left:15px; background:none; border:none; font-size:22px; cursor:pointer; z-index:10;">⬅️</button>
+        <div class="location" id="header-title" data-i18n="header_title" style="padding-left:34px;">📍 "Ishtaha" Onlayn Restorani</div>
+        <div style="position:absolute; top:12px; right:15px; display:flex; gap:6px;">
+            <button class="admin-toggle" id="lang-btn" onclick="toggleLangMenu()" style="background:#333;">🌐 <span id="lang-btn-label">UZ</span></button>
+            <button class="admin-toggle" id="contact-btn" onclick="openContactModal()" data-i18n="contact_btn">📞 Biz bilan bog'lanish</button>
+        </div>
+        <div id="lang-menu" style="display:none; position:absolute; top:48px; right:15px; background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); overflow:hidden; z-index:500;">
+            <div class="lang-option" onclick="setLanguage('uz')" style="padding:12px 20px; cursor:pointer; font-weight:bold; border-bottom:1px solid #eee;">🇺🇿 O'zbekcha</div>
+            <div class="lang-option" onclick="setLanguage('ru')" style="padding:12px 20px; cursor:pointer; font-weight:bold; border-bottom:1px solid #eee;">🇷🇺 Русский</div>
+            <div class="lang-option" onclick="setLanguage('en')" style="padding:12px 20px; cursor:pointer; font-weight:bold;">🇬🇧 English</div>
+        </div>
+        <input type="text" class="search-box" id="search-input" onkeyup="searchFood()" placeholder="Taom qidirish..." data-i18n-placeholder="search_placeholder">
     </div>
 
     <div class="banner">
-        <div class="banner-text">Ishtaha Ochilsin! 🍕<div style="font-size: 12px; font-weight: normal; margin-top: 5px; color: #666;">Tezkor onlayn buyurtma</div></div>
+        <div class="banner-text" data-i18n-html="banner_text">Ishtaha Ochilsin! 🍕<div style="font-size: 12px; font-weight: normal; margin-top: 5px; color: #666;" data-i18n="banner_sub">Tezkor onlayn buyurtma</div></div>
         <div style="font-size: 45px;">🍱</div>
     </div>
 
@@ -171,13 +185,13 @@
     <div class="modal-overlay" id="contact-modal">
         <div class="receipt-box" style="font-family: Arial, sans-serif; text-align: center;">
             <div style="font-size: 40px; margin-bottom: 10px;">🍽️</div>
-            <h2 style="margin-bottom: 15px;">"Ishtaha" bilan bog'lanish</h2>
+            <h2 style="margin-bottom: 15px;" data-i18n="contact_title">"Ishtaha" bilan bog'lanish</h2>
             <div style="text-align: left; font-size: 14px; line-height: 2; color: #333;">
-                <div>📞 Telefon: <b id="contact-phone-display"></b></div>
+                <div><span data-i18n="contact_phone_label">📞 Telefon:</span> <b id="contact-phone-display"></b></div>
                 <div>📢 Telegram: <a href="https://t.me/ishtaha_taomlar" target="_blank">@ishtaha_taomlar</a></div>
-                <div>🕒 Ish vaqti: <span id="contact-hours-display"></span></div>
+                <div><span data-i18n="contact_hours_label">🕒 Ish vaqti:</span> <span id="contact-hours-display"></span></div>
             </div>
-            <button class="btn-close-receipt" onclick="closeContactModal()">Yopish</button>
+            <button class="btn-close-receipt" onclick="closeContactModal()" data-i18n="btn_close">Yopish</button>
             <div style="margin-top: 14px; font-size: 12px; color: #bbb; cursor: pointer;" onclick="unlockAdmin()">⚙️ Admin</div>
         </div>
     </div>
@@ -187,7 +201,10 @@
         <div class="receipt-box" style="font-family: Arial, sans-serif; text-align: center; max-width: 320px;">
             <div style="font-size: 34px; margin-bottom: 8px;">🔒</div>
             <h2 style="margin-bottom: 12px; font-size: 18px;">Admin parolini kiriting</h2>
-            <input type="password" id="admin-password-input" class="form-control" placeholder="Parol" style="text-align:center; margin-bottom: 10px;" onkeydown="if(event.key==='Enter') submitAdminPassword();">
+            <div style="position:relative; margin-bottom: 10px;">
+                <input type="password" id="admin-password-input" class="form-control" placeholder="Parol" style="text-align:center; padding-right:42px;" onkeydown="if(event.key==='Enter') submitAdminPassword();">
+                <button type="button" onclick="toggleAdminPasswordVisibility()" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:18px; cursor:pointer;">🔍</button>
+            </div>
             <div id="admin-password-error" style="color:#ff4d4d; font-size:12px; margin-bottom:8px; display:none;">Noto'g'ri parol, qaytadan urinib ko'ring</div>
             <button class="btn-close-receipt" style="background:#28a745; color:#fff; margin-bottom:8px;" onclick="submitAdminPassword()">Kirish</button>
             <button class="btn-close-receipt" style="background:#eee;" onclick="closeAdminPasswordModal()">Bekor qilish</button>
@@ -266,6 +283,22 @@
 
         <div class="admin-divider"></div>
 
+        <h3>🔑 Admin parolini o'zgartirish</h3>
+        <div class="form-group">
+            <label>Joriy parol:</label>
+            <input type="password" id="change-pass-current" placeholder="Joriy parolni kiriting">
+        </div>
+        <div class="form-group">
+            <label>Yangi parol:</label>
+            <input type="password" id="change-pass-new" placeholder="Yangi parolni kiriting">
+        </div>
+        <button class="btn-save-settings" onclick="changeAdminPassword()">Parolni saqlash</button>
+        <div class="admin-settings-hint">
+            Yangi parol shu sahifa ochiq turgan sessiyada ishlaydi. Doimiy ishlashi uchun kod ichidagi <code>ADMIN_PASSWORD</code> qatoriga yangi parolni yozib qo'ying.
+        </div>
+
+        <div class="admin-divider"></div>
+
         <h3>💳 To'lov tizimlari (Payme / Click)</h3>
         <div class="form-group">
             <label>Payme Merchant ID:</label>
@@ -293,26 +326,26 @@
     <div id="food-list"></div>
 
     <!-- RO'YXAT -->
-    <div class="section-title">🛒 Savatdagi taomlar ro'yxati</div>
+    <div class="section-title" data-i18n="cart_title">🛒 Savatdagi taomlar ro'yxati</div>
     <div class="cart-list-container">
-        <div id="cart-items-list" class="cart-empty-text">Savat bo'sh. Taom qo'shing...</div>
+        <div id="cart-items-list" class="cart-empty-text" data-i18n="cart_empty">Savat bo'sh. Taom qo'shing...</div>
     </div>
 
     <!-- FORMA -->
-    <div class="section-title">👤 Buyurtmachining ma'lumotlari</div>
+    <div class="section-title" data-i18n="customer_title">👤 Buyurtmachining ma'lumotlari</div>
     <div class="client-form">
         <div class="form-group">
-            <label>Ismingiz:</label>
-            <input type="text" id="client-name" class="form-control" placeholder="Ismingizni yozing...">
+            <label data-i18n="label_name">Ismingiz:</label>
+            <input type="text" id="client-name" class="form-control" placeholder="Ismingizni yozing..." data-i18n-placeholder="placeholder_name">
         </div>
         <div class="form-group">
-            <label>Telefon raqamingiz:</label>
+            <label data-i18n="label_phone">Telefon raqamingiz:</label>
             <input type="tel" id="client-phone" class="form-control" placeholder="Masalan: +998901234567">
         </div>
         <div class="form-group">
-            <label>Yetkazib berish manzili:</label>
-            <input type="text" id="client-address" class="form-control" placeholder="Uy manzili yoki mo'ljal...">
-            <button type="button" class="btn-location" id="location-btn" onclick="getLocation()">📍 Joylashuvimni aniqlash</button>
+            <label data-i18n="label_address">Yetkazib berish manzili:</label>
+            <input type="text" id="client-address" class="form-control" placeholder="Uy manzili yoki mo'ljal..." data-i18n-placeholder="placeholder_address">
+            <button type="button" class="btn-location" id="location-btn" onclick="getLocation()" data-i18n="btn_location">📍 Joylashuvimni aniqlash</button>
             <div class="location-result" id="location-result"></div>
         </div>
     </div>
@@ -320,45 +353,209 @@
     <!-- FOOTER -->
     <div class="footer-nav">
         <div class="cart-status">
-            Savat: <span id="cart-count">0</span> taom<br>
-            Jami: <span id="cart-total" style="color: #ff5500;">0</span> so'm
+            <span data-i18n="cart_label">Savat:</span> <span id="cart-count">0</span> <span data-i18n="cart_unit">taom</span><br>
+            <span data-i18n="total_label">Jami:</span> <span id="cart-total" style="color: #ff5500;">0</span> so'm
         </div>
-        <a href="javascript:void(0);" id="order-link" class="btn-order" onclick="checkCart(event)">Buyurtma berish</a>
+        <a href="javascript:void(0);" id="order-link" class="btn-order" onclick="checkCart(event)" data-i18n="btn_order">Buyurtma berish</a>
     </div>
 
     <!-- CHEK MODAL -->
     <div class="modal-overlay" id="receipt-modal">
         <div class="receipt-box">
             <div class="receipt-header">
-                <h2>🧾 "Ishtaha" CHEK</h2>
+                <h2 data-i18n="receipt_title">🧾 "Ishtaha" CHEK</h2>
                 <div id="receipt-order-id" style="font-size: 12px; color: #666;"></div>
                 <div id="receipt-date" style="font-size: 12px; color: #666;"></div>
             </div>
             <div id="receipt-items"></div>
             <div class="receipt-divider"></div>
             <div class="receipt-total">
-                <span>JAMI:</span>
+                <span data-i18n="total_word">JAMI:</span>
                 <span id="receipt-total-amount">0 so'm</span>
             </div>
             <div class="receipt-info" id="receipt-client-info"></div>
             <div class="receipt-telegram-status" id="receipt-telegram-status"></div>
             <button class="btn-close-receipt" id="btn-retry-telegram" style="display:none; background:#007bff; color:#fff; margin-top:8px;" onclick="retrySendTelegram()">🔄 Qayta yuborish</button>
             <div class="payment-section">
-                <div class="payment-title">💰 To'lov usulini tanlang:</div>
+                <div class="payment-title" data-i18n="payment_title">💰 To'lov usulini tanlang:</div>
                 <div class="payment-buttons">
                     <button class="btn-pay btn-payme" id="btn-pay-payme" onclick="payWithPayme()">Payme</button>
                     <button class="btn-pay btn-click" id="btn-pay-click" onclick="payWithClick()">Click</button>
                 </div>
                 <div class="payment-hint" id="payment-hint"></div>
             </div>
-            <div class="receipt-thanks">Buyurtmangiz uchun rahmat! 🙏<br>Tez orada siz bilan bog'lanamiz.</div>
-            <button class="btn-close-receipt" onclick="closeReceipt()">Yopish</button>
+            <div class="receipt-thanks" data-i18n-html="receipt_thanks">Buyurtmangiz uchun rahmat! 🙏<br>Tez orada siz bilan bog'lanamiz.</div>
+            <button class="btn-close-receipt" onclick="closeReceipt()" data-i18n="btn_close">Yopish</button>
         </div>
     </div>
 
     <div class="toast" id="toast"></div>
 
     <script>
+        /* ====== TILLAR (UZ / RU / EN) ====== */
+        let currentLang = 'uz';
+
+        const TRANSLATIONS = {
+            uz: {
+                header_title: '📍 "Ishtaha" Onlayn Restorani',
+                contact_btn: "📞 Biz bilan bog'lanish",
+                search_placeholder: 'Taom qidirish...',
+                banner_text: "Ishtaha Ochilsin! 🍕",
+                banner_sub: 'Tezkor onlayn buyurtma',
+                contact_title: '"Ishtaha" bilan bog\'lanish',
+                contact_phone_label: '📞 Telefon:',
+                contact_hours_label: '🕒 Ish vaqti:',
+                btn_close: 'Yopish',
+                cart_title: "🛒 Savatdagi taomlar ro'yxati",
+                cart_empty: "Savat bo'sh. Taom qo'shing...",
+                customer_title: "👤 Buyurtmachining ma'lumotlari",
+                label_name: 'Ismingiz:',
+                placeholder_name: 'Ismingizni yozing...',
+                label_phone: 'Telefon raqamingiz:',
+                label_address: 'Yetkazib berish manzili:',
+                placeholder_address: "Uy manzili yoki mo'ljal...",
+                btn_location: '📍 Joylashuvimni aniqlash',
+                cart_label: 'Savat:',
+                cart_unit: 'taom',
+                total_label: 'Jami:',
+                btn_order: 'Buyurtma berish',
+                receipt_title: '🧾 "Ishtaha" CHEK',
+                total_word: 'JAMI:',
+                payment_title: "💰 To'lov usulini tanlang:",
+                receipt_thanks: "Buyurtmangiz uchun rahmat! 🙏<br>Tez orada siz bilan bog'lanamiz.",
+                btn_add: "+ Qo'shish",
+                cat_fastfood: 'Fast-Food',
+                cat_milliy: 'Milliy taomlar',
+                cat_salatlar: 'Salatlar',
+                cat_ichimliklar: 'Ichimliklar',
+                cat_shirinliklar: 'Shirinliklar',
+                login_welcome: '"Ishtaha" ga xush kelibsiz',
+                login_phone_prompt: 'Davom etish uchun telefon raqamingizni kiriting',
+                login_send_code: 'Kod yuborish',
+                login_code_prompt: 'Telefoningizga yuborilgan 4 xonali kodni kiriting',
+                login_verify: 'Tasdiqlash',
+                login_resend: 'Kodni qayta yuborish',
+                login_demo_note: "Eslatma: bu DEMO rejim — haqiqiy SMS xizmati ulanmaguncha kod yuqorida ko'rsatiladi, telefonga real SMS kelmaydi."
+            },
+            ru: {
+                header_title: '📍 Онлайн-ресторан "Ishtaha"',
+                contact_btn: '📞 Связаться с нами',
+                search_placeholder: 'Поиск блюд...',
+                banner_text: 'Приятного аппетита! 🍕',
+                banner_sub: 'Быстрый онлайн-заказ',
+                contact_title: 'Связаться с "Ishtaha"',
+                contact_phone_label: '📞 Телефон:',
+                contact_hours_label: '🕒 Часы работы:',
+                btn_close: 'Закрыть',
+                cart_title: '🛒 Список блюд в корзине',
+                cart_empty: 'Корзина пуста. Добавьте блюдо...',
+                customer_title: '👤 Данные заказчика',
+                label_name: 'Ваше имя:',
+                placeholder_name: 'Введите имя...',
+                label_phone: 'Номер телефона:',
+                label_address: 'Адрес доставки:',
+                placeholder_address: 'Домашний адрес или ориентир...',
+                btn_location: '📍 Определить местоположение',
+                cart_label: 'Корзина:',
+                cart_unit: 'блюд',
+                total_label: 'Итого:',
+                btn_order: 'Оформить заказ',
+                receipt_title: '🧾 ЧЕК "Ishtaha"',
+                total_word: 'ИТОГО:',
+                payment_title: '💰 Выберите способ оплаты:',
+                receipt_thanks: 'Спасибо за заказ! 🙏<br>Мы скоро свяжемся с вами.',
+                btn_add: '+ Добавить',
+                cat_fastfood: 'Фаст-фуд',
+                cat_milliy: 'Национальные блюда',
+                cat_salatlar: 'Салаты',
+                cat_ichimliklar: 'Напитки',
+                cat_shirinliklar: 'Десерты',
+                login_welcome: 'Добро пожаловать в "Ishtaha"',
+                login_phone_prompt: 'Введите номер телефона, чтобы продолжить',
+                login_send_code: 'Отправить код',
+                login_code_prompt: 'Введите 4-значный код, отправленный на ваш телефон',
+                login_verify: 'Подтвердить',
+                login_resend: 'Отправить код повторно',
+                login_demo_note: 'Внимание: это ДЕМО-режим — пока не подключён реальный SMS-сервис, код показывается выше, на телефон SMS не приходит.'
+            },
+            en: {
+                header_title: '📍 "Ishtaha" Online Restaurant',
+                contact_btn: '📞 Contact Us',
+                search_placeholder: 'Search dishes...',
+                banner_text: 'Enjoy your meal! 🍕',
+                banner_sub: 'Fast online ordering',
+                contact_title: 'Contact "Ishtaha"',
+                contact_phone_label: '📞 Phone:',
+                contact_hours_label: '🕒 Working hours:',
+                btn_close: 'Close',
+                cart_title: '🛒 Cart items',
+                cart_empty: 'Cart is empty. Add a dish...',
+                customer_title: '👤 Customer details',
+                label_name: 'Your name:',
+                placeholder_name: 'Enter your name...',
+                label_phone: 'Phone number:',
+                label_address: 'Delivery address:',
+                placeholder_address: 'Home address or landmark...',
+                btn_location: '📍 Detect my location',
+                cart_label: 'Cart:',
+                cart_unit: 'items',
+                total_label: 'Total:',
+                btn_order: 'Place order',
+                receipt_title: '🧾 "Ishtaha" RECEIPT',
+                total_word: 'TOTAL:',
+                payment_title: '💰 Choose payment method:',
+                receipt_thanks: 'Thank you for your order! 🙏<br>We will contact you shortly.',
+                btn_add: '+ Add',
+                cat_fastfood: 'Fast-Food',
+                cat_milliy: 'National dishes',
+                cat_salatlar: 'Salads',
+                cat_ichimliklar: 'Drinks',
+                cat_shirinliklar: 'Desserts',
+                login_welcome: 'Welcome to "Ishtaha"',
+                login_phone_prompt: 'Enter your phone number to continue',
+                login_send_code: 'Send code',
+                login_code_prompt: 'Enter the 4-digit code sent to your phone',
+                login_verify: 'Verify',
+                login_resend: 'Resend code',
+                login_demo_note: "Note: this is DEMO mode — until a real SMS service is connected, the code is shown above; no real SMS is sent."
+            }
+        };
+
+        function t(key) {
+            return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || TRANSLATIONS.uz[key] || key;
+        }
+
+        function toggleLangMenu() {
+            const menu = document.getElementById('lang-menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('lang-menu').style.display = 'none';
+            document.getElementById('lang-btn-label').textContent = lang.toUpperCase();
+            document.documentElement.setAttribute('lang', lang);
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                el.textContent = t(el.getAttribute('data-i18n'));
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+            });
+            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+                const key = el.getAttribute('data-i18n-html');
+                // banner_text va receipt_thanks kabi ichida <br> yoki ichki <div> bo'lgan matnlar
+                if (key === 'banner_text') {
+                    el.innerHTML = t('banner_text') + '<div style="font-size: 12px; font-weight: normal; margin-top: 5px; color: #666;" data-i18n="banner_sub">' + t('banner_sub') + '</div>';
+                } else {
+                    el.innerHTML = t(key);
+                }
+            });
+
+            renderFoodList();
+            if (document.getElementById('contact-modal').classList.contains('show')) renderContactInfo();
+        }
+
         /* ====== BOG'LANISH MA'LUMOTLARI ======
            Admin panelidan o'zgartirilishi mumkin, yoki shu yerga to'g'ridan-to'g'ri yozing. */
         let CONTACT_PHONE = "+998916356911";
@@ -366,7 +563,8 @@
 
         function renderContactInfo() {
             document.getElementById('contact-phone-display').textContent = CONTACT_PHONE;
-            document.getElementById('contact-hours-display').textContent = "har kuni " + CONTACT_HOURS;
+            const dailyWord = currentLang === 'ru' ? 'ежедневно ' : (currentLang === 'en' ? 'daily ' : 'har kuni ');
+            document.getElementById('contact-hours-display').textContent = dailyWord + CONTACT_HOURS;
         }
 
         function saveContactSettings() {
@@ -391,12 +589,15 @@
         let CLICK_MERCHANT_ID = "";
 
         /* ====== KATEGORIYALAR ====== */
+        const CATEGORY_ICONS = {
+            fastfood: '🍔', milliy: '🇺🇿', salatlar: '🥗', ichimliklar: '🥤', shirinliklar: '🍰'
+        };
         const CATEGORIES = [
-            { key: 'fastfood', title: '🍔 Fast-Food' },
-            { key: 'milliy', title: "🇺🇿 Milliy taomlar" },
-            { key: 'salatlar', title: '🥗 Salatlar' },
-            { key: 'ichimliklar', title: '🥤 Ichimliklar' },
-            { key: 'shirinliklar', title: '🍰 Shirinliklar' }
+            { key: 'fastfood' },
+            { key: 'milliy' },
+            { key: 'salatlar' },
+            { key: 'ichimliklar' },
+            { key: 'shirinliklar' }
         ];
 
         /* ====== TAOMLAR MA'LUMOTLARI (dinamik massiv) ====== */
@@ -516,7 +717,7 @@
 
                 const titleEl = document.createElement('div');
                 titleEl.className = 'section-title' + (items.length === 0 ? ' empty-cat' : '');
-                titleEl.textContent = cat.title;
+                titleEl.textContent = CATEGORY_ICONS[cat.key] + ' ' + t('cat_' + cat.key);
                 container.appendChild(titleEl);
 
                 items.forEach(item => {
@@ -535,7 +736,7 @@
                                 <button class="btn-delete-food" onclick="deleteFood('${item.id}')">🗑 O'chirish</button>
                             </div>
                         </div>
-                        <button class="btn-add" onclick="addToCart('${item.id}')">+ Qo'shish</button>
+                        <button class="btn-add" onclick="addToCart('${item.id}')">${t('btn_add')}</button>
                     `;
                     container.appendChild(card);
                 });
@@ -578,7 +779,7 @@
         }
 
         /* ---------- ADMIN REJIM (yashirin — faqat sizga) ---------- */
-        const ADMIN_PASSWORD = "Ishtaha2026"; // Xohlasangiz shu parolni o'zgartiring
+        let ADMIN_PASSWORD = "Ishtaha2026"; // Xohlasangiz shu parolni o'zgartiring
 
         // "Biz bilan bog'lanish" tugmasi oddiy mijozlar uchun bog'lanish oynasini ochadi.
         // Admin kirish esa o'sha oyna ICHIDA, pastdagi kichik "⚙️ Admin" havolasi orqali —
@@ -603,6 +804,11 @@
 
         function closeAdminPasswordModal() {
             document.getElementById('admin-password-modal').classList.remove('show');
+        }
+
+        function toggleAdminPasswordVisibility() {
+            const input = document.getElementById('admin-password-input');
+            input.type = input.type === 'password' ? 'text' : 'password';
         }
 
         function submitAdminPassword() {
@@ -678,10 +884,36 @@
             }
         }
 
+        // Orqaga qaytish tugmasi — login/til tanlash oynasini qayta ochadi
+        function reopenLogin() {
+            document.getElementById('login-step-phone').classList.add('active');
+            document.getElementById('login-step-code').classList.remove('active');
+            document.getElementById('login-phone').value = '';
+            document.getElementById('login-overlay').classList.remove('hide');
+        }
+
         function saveTelegramSettings() {
             TELEGRAM_BOT_TOKEN = document.getElementById('tg-bot-token').value.trim();
             TELEGRAM_CHAT_ID = document.getElementById('tg-chat-id').value.trim();
             showToast('Telegram sozlamalari saqlandi ✅');
+        }
+
+        function changeAdminPassword() {
+            const current = document.getElementById('change-pass-current').value;
+            const newPass = document.getElementById('change-pass-new').value.trim();
+
+            if (current !== ADMIN_PASSWORD) {
+                showToast("Joriy parol noto'g'ri");
+                return;
+            }
+            if (!newPass || newPass.length < 4) {
+                showToast("Yangi parol kamida 4 belgidan iborat bo'lsin");
+                return;
+            }
+            ADMIN_PASSWORD = newPass;
+            document.getElementById('change-pass-current').value = '';
+            document.getElementById('change-pass-new').value = '';
+            showToast('Admin paroli yangilandi ✅');
         }
 
         function savePaymentSettings() {
@@ -1053,7 +1285,7 @@
         }
 
         /* ---------- BOSHLANG'ICH CHIZISH ---------- */
-        renderFoodList();
+        setLanguage('uz');
     </script>
 </body>
 </html>

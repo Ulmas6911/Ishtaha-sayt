@@ -827,30 +827,43 @@
         function initAndShowMap() {
             if (!mapInstance) {
                 mapInstance = L.map('location-map', { zoomControl: true, attributionControl: false })
-                    .setView([mapPendingCoords.lat, mapPendingCoords.lng], 15);
+                    .setView([mapPendingCoords.lat, mapPendingCoords.lng], 17);
 
-                // Asosiy xarita manbai — CARTO (ilovalar uchun ishonchli, tez va bepul)
-                const primaryLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                    subdomains: 'abcd',
-                    maxZoom: 20
+                // Asosiy xarita — SUN'IY YO'LDOSH (SPUTNIK) ko'rinishi, Esri World Imagery orqali
+                const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    maxZoom: 19
+                });
+
+                // Ko'cha va joy nomlarini sun'iy yo'ldosh rasmi ustiga qo'shib ko'rsatuvchi qatlam
+                const labelsLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                    maxZoom: 19
                 });
 
                 let tileErrorCount = 0;
                 let fallbackActivated = false;
-                primaryLayer.on('tileerror', function () {
+                satelliteLayer.on('tileerror', function () {
                     tileErrorCount++;
                     if (tileErrorCount > 4 && !fallbackActivated) {
                         fallbackActivated = true;
-                        mapInstance.removeLayer(primaryLayer);
-                        // Zaxira manba — standart OpenStreetMap tile serveri
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                            subdomains: 'abc',
-                            maxZoom: 19
-                        }).addTo(mapInstance);
+                        mapInstance.removeLayer(satelliteLayer);
+                        mapInstance.removeLayer(labelsLayer);
+                        // Zaxira manba — oddiy xarita (CARTO), sun'iy yo'ldosh yuklanmasa
+                        const backupLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                            subdomains: 'abcd',
+                            maxZoom: 20
+                        });
+                        backupLayer.on('tileerror', function () {
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                subdomains: 'abc',
+                                maxZoom: 19
+                            }).addTo(mapInstance);
+                        });
+                        backupLayer.addTo(mapInstance);
                     }
                 });
 
-                primaryLayer.addTo(mapInstance);
+                satelliteLayer.addTo(mapInstance);
+                labelsLayer.addTo(mapInstance);
 
                 mapInstance.on('moveend', function () {
                     const c = mapInstance.getCenter();

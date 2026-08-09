@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ishtaha - Ovqat buyurtma qilish</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: Arial, sans-serif; background-color: #f5f5f5; padding-bottom: 140px; }
@@ -126,19 +125,6 @@
         .login-step.active { display: block; }
         .login-demo-note { font-size: 11px; color: #aaa; margin-top: 14px; line-height: 1.5; }
         .login-resend { font-size: 12px; color: #007bff; margin-top: 10px; cursor: pointer; display: inline-block; }
-
-        /* Yandex uslubidagi xaritadan joylashuv tanlash */
-        .map-modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fff; z-index: 15000; flex-direction: column; }
-        .map-modal-overlay.show { display: flex; }
-        .map-modal-header { padding: 12px 15px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 10px; z-index: 2; }
-        .map-modal-header button { background: #eee; border: none; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer; }
-        .map-modal-header span { font-weight: bold; font-size: 15px; }
-        #location-map { flex: 1; width: 100%; }
-        .map-center-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-size: 38px; z-index: 1000; pointer-events: none; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.35)); }
-        .map-modal-footer { padding: 14px 15px; background: #fff; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); }
-        .map-address-preview { font-size: 12px; color: #555; margin-bottom: 10px; text-align: center; }
-        .btn-confirm-location { width: 100%; background: #ff5500; color: #fff; border: none; padding: 14px; border-radius: 14px; font-weight: bold; font-size: 15px; cursor: pointer; }
-        .btn-my-location { position: absolute; bottom: 100px; right: 15px; background: #fff; border: none; width: 46px; height: 46px; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.25); font-size: 20px; z-index: 1000; cursor: pointer; }
     </style>
 </head>
 
@@ -326,25 +312,8 @@
         <div class="form-group">
             <label>Yetkazib berish manzili:</label>
             <input type="text" id="client-address" class="form-control" placeholder="Uy manzili yoki mo'ljal...">
-            <button type="button" class="btn-location" id="location-btn" onclick="openLocationMap()">📍 Xaritadan joylashuvni belgilash</button>
+            <button type="button" class="btn-location" id="location-btn" onclick="getLocation()">📍 Joylashuvimni aniqlash</button>
             <div class="location-result" id="location-result"></div>
-        </div>
-    </div>
-
-    <!-- YANDEX USLUBIDAGI XARITA MODALI -->
-    <div class="map-modal-overlay" id="map-modal">
-        <div class="map-modal-header">
-            <button onclick="closeLocationMap()">✕</button>
-            <span>Yetkazib berish manzilini belgilang</span>
-        </div>
-        <div style="position: relative; flex: 1;">
-            <div id="location-map"></div>
-            <div class="map-center-pin">📍</div>
-            <button class="btn-my-location" onclick="centerOnMyLocation()">🎯</button>
-        </div>
-        <div class="map-modal-footer">
-            <div class="map-address-preview" id="map-address-preview">Xaritani surib, manzilni pin belgisi ustiga to'g'rilang</div>
-            <button class="btn-confirm-location" onclick="confirmMapLocation()">✅ Shu joyni tasdiqlash</button>
         </div>
     </div>
 
@@ -764,197 +733,31 @@
             });
         }
 
-        /* ---------- LOKATSIYA (Yandex uslubidagi xarita) ---------- */
-        let mapInstance = null;
-        let mapPendingCoords = { lat: 41.311081, lng: 69.240562 }; // standart: Toshkent markazi
-        let leafletLoadAttempted = false;
-
-        // Leaflet kutubxonasini bir nechta manbadan (CDN) ketma-ket urinib yuklaymiz —
-        // birortasi bloklangan/ishlamasa, avtomatik keyingisiga o'tadi.
-        function loadLeafletLibrary(onReady, onFail) {
-            if (typeof L !== 'undefined') { onReady(); return; }
-            if (leafletLoadAttempted) { onFail(); return; }
-            leafletLoadAttempted = true;
-
-            const sources = [
-                'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
-                'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'
-            ];
-            let idx = 0;
-
-            function tryNext() {
-                if (idx >= sources.length) { onFail(); return; }
-                const s = document.createElement('script');
-                s.src = sources[idx];
-                s.onload = function () {
-                    if (typeof L !== 'undefined') { onReady(); }
-                    else { idx++; tryNext(); }
-                };
-                s.onerror = function () { idx++; tryNext(); };
-                document.head.appendChild(s);
-            }
-            tryNext();
-        }
-
-        function openLocationMap() {
-            document.getElementById('map-modal').classList.add('show');
-            const previewEl = document.getElementById('map-address-preview');
-            previewEl.textContent = 'Xarita yuklanmoqda...';
-
-            loadLeafletLibrary(
-                function () { initAndShowMap(); },
-                function () {
-                    document.getElementById('map-modal').classList.remove('show');
-                    showToast("Xarita yuklanmadi. Oddiy GPS orqali aniqlanmoqda...");
-                    if (!navigator.geolocation) {
-                        showToast("Brauzeringiz lokatsiyani qo'llab-quvvatlamaydi");
-                        return;
-                    }
-                    navigator.geolocation.getCurrentPosition(
-                        function (pos) {
-                            mapPendingCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                            confirmMapLocation();
-                        },
-                        function () {
-                            showToast("Joylashuvni aniqlab bo'lmadi. Ruxsat berilganini tekshiring.");
-                        }
-                    );
-                }
-            );
-        }
-
-        function initAndShowMap() {
-            if (!mapInstance) {
-                mapInstance = L.map('location-map', { zoomControl: true, attributionControl: false })
-                    .setView([mapPendingCoords.lat, mapPendingCoords.lng], 17);
-
-                // Asosiy xarita — SUN'IY YO'LDOSH (SPUTNIK) ko'rinishi, Esri World Imagery orqali
-                const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    maxZoom: 19
-                });
-
-                // Ko'cha va joy nomlarini sun'iy yo'ldosh rasmi ustiga qo'shib ko'rsatuvchi qatlam
-                const labelsLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-                    maxZoom: 19
-                });
-
-                let tileErrorCount = 0;
-                let fallbackActivated = false;
-                satelliteLayer.on('tileerror', function () {
-                    tileErrorCount++;
-                    if (tileErrorCount > 4 && !fallbackActivated) {
-                        fallbackActivated = true;
-                        mapInstance.removeLayer(satelliteLayer);
-                        mapInstance.removeLayer(labelsLayer);
-                        // Zaxira manba — oddiy xarita (CARTO), sun'iy yo'ldosh yuklanmasa
-                        const backupLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                            subdomains: 'abcd',
-                            maxZoom: 20
-                        });
-                        backupLayer.on('tileerror', function () {
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                subdomains: 'abc',
-                                maxZoom: 19
-                            }).addTo(mapInstance);
-                        });
-                        backupLayer.addTo(mapInstance);
-                    }
-                });
-
-                satelliteLayer.addTo(mapInstance);
-                labelsLayer.addTo(mapInstance);
-
-                mapInstance.on('moveend', function () {
-                    const c = mapInstance.getCenter();
-                    mapPendingCoords = { lat: c.lat, lng: c.lng };
-                    updateMapAddressPreview();
-                });
-
-                setTimeout(() => mapInstance.invalidateSize(), 250);
-            } else {
-                mapInstance.setView([mapPendingCoords.lat, mapPendingCoords.lng], mapInstance.getZoom());
-                setTimeout(() => mapInstance.invalidateSize(), 250);
-            }
-
-            // Modal ochilganda avtomatik GPS joyga markazlashtirishga urinib ko'ramiz
-            centerOnMyLocation(true);
-            updateMapAddressPreview();
-        }
-
-        function closeLocationMap() {
-            document.getElementById('map-modal').classList.remove('show');
-        }
-
-        function centerOnMyLocation(silent) {
+        /* ---------- LOKATSIYA ---------- */
+        function getLocation() {
             if (!navigator.geolocation) {
-                if (!silent) showToast("Brauzeringiz lokatsiyani qo'llab-quvvatlamaydi");
+                showToast("Brauzeringiz lokatsiyani qo'llab-quvvatlamaydi");
                 return;
             }
+            const btn = document.getElementById('location-btn');
+            btn.textContent = '⏳ Aniqlanmoqda...';
+
             navigator.geolocation.getCurrentPosition(
                 function (pos) {
-                    mapPendingCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    if (mapInstance) mapInstance.setView([mapPendingCoords.lat, mapPendingCoords.lng], 17);
-                    updateMapAddressPreview();
+                    userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    btn.textContent = '✅ Joylashuv aniqlandi';
+                    btn.classList.add('located');
+                    const resultEl = document.getElementById('location-result');
+                    resultEl.classList.add('show');
+                    resultEl.innerHTML = 'Koordinatalar: ' + userLocation.lat.toFixed(5) + ', ' + userLocation.lng.toFixed(5) +
+                        ' — <a href="https://maps.google.com/?q=' + userLocation.lat + ',' + userLocation.lng + '" target="_blank">Xaritada ko\'rish</a>';
+                    showToast('Joylashuvingiz aniqlandi 📍');
                 },
-                function () {
-                    if (!silent) showToast("Joylashuvni aniqlab bo'lmadi. Ruxsat berilganini tekshiring.");
+                function (err) {
+                    btn.textContent = '📍 Joylashuvimni aniqlash';
+                    showToast("Joylashuvni aniqlab bo'lmadi. Ruxsat berilganini tekshiring.");
                 }
             );
-        }
-
-        /* ---------- MANZILNI AVTOMATIK TOPISH (reverse geocoding) ---------- */
-        let geocodeRequestToken = 0;
-        let lastGeocodedAddress = '';
-
-        function updateMapAddressPreview() {
-            const el = document.getElementById('map-address-preview');
-            el.textContent = '📍 Manzil aniqlanmoqda...';
-
-            const myToken = ++geocodeRequestToken;
-            const lat = mapPendingCoords.lat;
-            const lng = mapPendingCoords.lng;
-
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=uz,ru`)
-                .then(res => res.json())
-                .then(data => {
-                    if (myToken !== geocodeRequestToken) return; // eskirgan so'rov, e'tiborsiz qoldiramiz
-                    if (data && data.display_name) {
-                        lastGeocodedAddress = data.display_name;
-                        el.textContent = '📍 ' + data.display_name;
-                    } else {
-                        lastGeocodedAddress = '';
-                        el.textContent = 'Koordinatalar: ' + lat.toFixed(5) + ', ' + lng.toFixed(5);
-                    }
-                })
-                .catch(() => {
-                    if (myToken !== geocodeRequestToken) return;
-                    lastGeocodedAddress = '';
-                    el.textContent = 'Koordinatalar: ' + lat.toFixed(5) + ', ' + lng.toFixed(5);
-                });
-        }
-
-        function confirmMapLocation() {
-            userLocation = { lat: mapPendingCoords.lat, lng: mapPendingCoords.lng, address: lastGeocodedAddress };
-
-            const resultEl = document.getElementById('location-result');
-            resultEl.classList.add('show');
-            const addressLine = lastGeocodedAddress ? lastGeocodedAddress : ('Koordinatalar: ' + userLocation.lat.toFixed(5) + ', ' + userLocation.lng.toFixed(5));
-            resultEl.innerHTML = '📍 ' + addressLine +
-                ' — <a href="https://maps.google.com/?q=' + userLocation.lat + ',' + userLocation.lng + '" target="_blank">Xaritada ko\'rish</a>';
-
-            // Aniqlangan manzilni "Yetkazib berish manzili" maydoniga avtomatik yozamiz
-            const addressInput = document.getElementById('client-address');
-            if (addressInput && lastGeocodedAddress) {
-                addressInput.value = lastGeocodedAddress;
-            }
-
-            const btn = document.getElementById('location-btn');
-            btn.textContent = '✅ Joylashuv belgilandi';
-            btn.classList.add('located');
-
-            closeLocationMap();
-            showToast('Yetkazib berish nuqtasi belgilandi 📍');
         }
 
         /* ---------- SAVAT ---------- */

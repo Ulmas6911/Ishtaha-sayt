@@ -166,7 +166,7 @@
         <div class="location" id="header-title" data-i18n="header_title" style="padding-left:34px;">📍 "Ishtaha" Onlayn Restorani</div>
         <div style="position:absolute; top:12px; right:15px; display:flex; gap:6px;">
             <button class="admin-toggle" id="lang-btn" onclick="toggleLangMenu()" style="background:#333;">🌐 <span id="lang-btn-label">UZ</span></button>
-            <button class="admin-toggle" id="contact-btn" onclick="openContactModal()" data-i18n="contact_btn">📞 Biz bilan bog'lanish</button>
+            <button class="admin-toggle" id="contact-btn" onclick="openContactModal()" data-i18n="contact_btn">📞 Call-Markaz</button>
         </div>
         <div id="lang-menu" style="display:none; position:absolute; top:48px; right:15px; background:#fff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); overflow:hidden; z-index:500;">
             <div class="lang-option" onclick="setLanguage('uz')" style="padding:12px 20px; cursor:pointer; font-weight:bold; border-bottom:1px solid #eee;">🇺🇿 O'zbekcha</div>
@@ -234,7 +234,7 @@
             </select>
         </div>
         <div class="form-group">
-            <label>Rasm ko'rinishi:</label>
+            <label>Rasm ko'rinishi (agar quyida haqiqiy rasm havolasi kiritilmasa, shu chizilgan rasm ishlatiladi):</label>
             <select id="new-food-icon">
                 <option value="burger">🍔 Burger ko'rinishi</option>
                 <option value="lavash">🌯 Lavash ko'rinishi</option>
@@ -245,6 +245,10 @@
                 <option value="dessert">🍰 Shirinlik ko'rinishi</option>
                 <option value="plate">🍽 Umumiy taom ko'rinishi</option>
             </select>
+        </div>
+        <div class="form-group">
+            <label>Haqiqiy rasm havolasi (ixtiyoriy):</label>
+            <input type="text" id="new-food-image" placeholder="https://... (rasm URL manzili)">
         </div>
         <button class="btn-add-food" onclick="addNewFood()">Menyuga qo'shish</button>
 
@@ -398,7 +402,7 @@
         const TRANSLATIONS = {
             uz: {
                 header_title: '📍 "Ishtaha" Onlayn Restorani',
-                contact_btn: "📞 Biz bilan bog'lanish",
+                contact_btn: '📞 Call-Markaz',
                 search_placeholder: 'Taom qidirish...',
                 banner_text: "Ishtaha Ochilsin! 🍕",
                 banner_sub: 'Tezkor onlayn buyurtma',
@@ -439,7 +443,7 @@
             },
             ru: {
                 header_title: '📍 Онлайн-ресторан "Ishtaha"',
-                contact_btn: '📞 Связаться с нами',
+                contact_btn: '📞 Call-центр',
                 search_placeholder: 'Поиск блюд...',
                 banner_text: 'Приятного аппетита! 🍕',
                 banner_sub: 'Быстрый онлайн-заказ',
@@ -480,7 +484,7 @@
             },
             en: {
                 header_title: '📍 "Ishtaha" Online Restaurant',
-                contact_btn: '📞 Contact Us',
+                contact_btn: '📞 Call Center',
                 search_placeholder: 'Search dishes...',
                 banner_text: 'Enjoy your meal! 🍕',
                 banner_sub: 'Fast online ordering',
@@ -603,22 +607,22 @@
         /* ====== TAOMLAR MA'LUMOTLARI (dinamik massiv) ====== */
         let nextFoodNum = 5;
         let FOOD_ITEMS = [
-            { id: 'food-1', name: 'Cheeseburger', price: 28000, category: 'fastfood', icon: 'burger' },
-            { id: 'food-2', name: 'Lavash Big', price: 34000, category: 'fastfood', icon: 'lavash' },
-            { id: 'food-3', name: "To'y Oshi", price: 35000, category: 'milliy', icon: 'osh' },
-            { id: 'food-4', name: "Go'shtli Somsa", price: 10000, category: 'milliy', icon: 'somsa' },
-            { id: 'food-5', name: 'Achchiq-chuchuk salat', price: 16000, category: 'salatlar', icon: 'salad' },
-            { id: 'food-6', name: 'Sezar salat', price: 24000, category: 'salatlar', icon: 'salad' },
-            { id: 'food-7', name: "Kola 0.5L", price: 9000, category: 'ichimliklar', icon: 'drink' },
-            { id: 'food-8', name: 'Issiq choy (choynak)', price: 6000, category: 'ichimliklar', icon: 'drink' },
-            { id: 'food-9', name: 'Napoleon tort', price: 18000, category: 'shirinliklar', icon: 'dessert' },
-            { id: 'food-10', name: 'Muzqaymoq', price: 12000, category: 'shirinliklar', icon: 'dessert' }
+            { id: 'food-1', name: 'Cheeseburger', price: 28000, category: 'fastfood', icon: 'burger', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Cheeseburger.jpg?width=300' },
+            { id: 'food-2', name: 'Lavash Big', price: 34000, category: 'fastfood', icon: 'lavash', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Jerusalem_shawarma.jpg?width=300' },
+            { id: 'food-3', name: "To'y Oshi", price: 35000, category: 'milliy', icon: 'osh', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Plov_Tashkent.jpg?width=300' },
+            { id: 'food-4', name: "Go'shtli Somsa", price: 10000, category: 'milliy', icon: 'somsa', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Uzbek_samsa.jpg?width=300' },
+            { id: 'food-5', name: 'Achchiq-chuchuk salat', price: 16000, category: 'salatlar', icon: 'salad', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Tomato_cucumber_salad.jpg?width=300' },
+            { id: 'food-6', name: 'Sezar salat', price: 24000, category: 'salatlar', icon: 'salad', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Caesar_salad_(2).jpg?width=300' },
+            { id: 'food-7', name: "Kola 0.5L", price: 9000, category: 'ichimliklar', icon: 'drink', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Tumbler_of_cola_with_ice.jpg?width=300' },
+            { id: 'food-8', name: 'Issiq choy (choynak)', price: 6000, category: 'ichimliklar', icon: 'drink', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Cup_of_black_tea.png?width=300' },
+            { id: 'food-9', name: 'Napoleon tort', price: 18000, category: 'shirinliklar', icon: 'dessert', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Napoleon_cake_02.JPG?width=300' },
+            { id: 'food-10', name: 'Muzqaymoq', price: 12000, category: 'shirinliklar', icon: 'dessert', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Vanilla_ice_cream_cone.JPG?width=300' }
         ];
         nextFoodNum = 11;
 
         let cart = {};          // { 'food-1': { name, price, qty }, ... }
         let adminMode = false;
-        let orderCounter = 1000;
+        let orderCounter = 0;
         let userLocation = null;
 
         /* ---------- IKONKALAR (SVG) ---------- */
@@ -725,8 +729,11 @@
                     card.className = 'food-card';
                     card.setAttribute('data-name', item.name.toLowerCase());
                     card.id = item.id;
+                    const imageHtml = item.image
+                        ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML=getIconSVG('${item.icon}')">`
+                        : getIconSVG(item.icon);
                     card.innerHTML = `
-                        <div class="food-image">${getIconSVG(item.icon)}</div>
+                        <div class="food-image">${imageHtml}</div>
                         <div class="food-details">
                             <div class="food-title">${item.name}</div>
                             <div class="food-price" id="price-${item.id}">${item.price.toLocaleString('ru-RU')} so'm</div>
@@ -749,16 +756,20 @@
             const price = parseInt(document.getElementById('new-food-price').value, 10);
             const category = document.getElementById('new-food-category').value;
             const icon = document.getElementById('new-food-icon').value;
+            const image = document.getElementById('new-food-image').value.trim();
 
             if (!name) { showToast("Iltimos, taom nomini kiriting."); return; }
             if (isNaN(price) || price <= 0) { showToast("Iltimos, to'g'ri narx kiriting."); return; }
 
             const id = 'food-' + nextFoodNum;
             nextFoodNum++;
-            FOOD_ITEMS.push({ id, name, price, category, icon });
+            const newItem = { id, name, price, category, icon };
+            if (image) newItem.image = image;
+            FOOD_ITEMS.push(newItem);
 
             document.getElementById('new-food-name').value = '';
             document.getElementById('new-food-price').value = '';
+            document.getElementById('new-food-image').value = '';
 
             renderFoodList();
             showToast(name + " menyuga qo'shildi ✅");
@@ -1103,7 +1114,7 @@
             const orderId = orderCounter;
             const dateStr = new Date().toLocaleString('uz-UZ');
 
-            document.getElementById('receipt-order-id').textContent = '№ ' + orderId;
+            document.getElementById('receipt-order-id').textContent = '№_' + orderId;
             document.getElementById('receipt-date').textContent = dateStr;
 
             const itemsDiv = document.getElementById('receipt-items');
@@ -1202,7 +1213,7 @@
         }
 
         function buildTelegramText(orderId, dateStr, name, phone, address, total) {
-            let text = `🧾 YANGI BUYURTMA #${orderId}\n`;
+            let text = `🧾 YANGI BUYURTMA №_${orderId}\n`;
             text += `🕒 ${dateStr}\n\n`;
             text += `Yetkazib beruvchi: "Ishtaha"\n\n`;
             text += `Buyurtmachi:\n`;

@@ -20,6 +20,13 @@
         .food-card.hidden { display: none; }
         .food-image { width: 60px; height: 60px; flex-shrink: 0; border-radius: 12px; overflow: hidden; background: #fafafa; display: flex; align-items: center; justify-content: center; }
         .food-image svg { width: 100%; height: 100%; }
+        .food-image-wrap { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
+        .food-image-wrap .food-image { position: absolute; top: 0; left: 0; }
+        body.admin-mode .food-image-wrap .food-image { display: none; }
+        .food-image-upload { display: none; width: 100%; height: 100%; border: 2px dashed #999; border-radius: 12px; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #888; text-align: center; cursor: pointer; overflow: hidden; background: #fafafa; position: absolute; top: 0; left: 0; line-height: 1.3; padding: 2px; }
+        body.admin-mode .food-image-upload { display: flex; }
+        .food-image-upload img { width: 100%; height: 100%; object-fit: cover; }
+        .food-image-upload:active { background: #f0f0f0; }
         .food-details { flex: 1; margin-left: 15px; min-width: 0; }
         .food-title { font-weight: bold; font-size: 16px; color: #000; }
         .food-price { color: #ff5500; font-weight: bold; margin-top: 5px; font-size: 15px; }
@@ -234,21 +241,32 @@
             </select>
         </div>
         <div class="form-group">
-            <label>Rasm ko'rinishi (agar quyida haqiqiy rasm havolasi kiritilmasa, shu chizilgan rasm ishlatiladi):</label>
-            <select id="new-food-icon">
-                <option value="burger">🍔 Burger ko'rinishi</option>
-                <option value="lavash">🌯 Lavash ko'rinishi</option>
-                <option value="osh">🍲 Osh/Plov ko'rinishi</option>
-                <option value="somsa">🥟 Somsa ko'rinishi</option>
-                <option value="salad">🥗 Salat ko'rinishi</option>
-                <option value="drink">🥤 Ichimlik ko'rinishi</option>
-                <option value="dessert">🍰 Shirinlik ko'rinishi</option>
-                <option value="plate">🍽 Umumiy taom ko'rinishi</option>
-            </select>
+            <label>Taom rasmi:</label>
+            <div class="food-image-upload" style="display:flex; position:static; width:70px; height:70px;" onclick="triggerNewFoodImageUpload()">
+                <span id="new-food-image-label">+ Qo'shish</span>
+            </div>
+            <input type="file" accept="image/*" id="new-food-image-file" style="display:none" onchange="handleNewFoodImageUpload(event)">
         </div>
         <div class="form-group">
-            <label>Haqiqiy rasm havolasi (ixtiyoriy):</label>
-            <input type="text" id="new-food-image" placeholder="https://... (rasm URL manzili)">
+            <label>Rasm ko'rinishi (agar yuqorida rasm tanlanmasa, shu chizilgan rasm ishlatiladi):</label>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <select id="new-food-icon" onchange="updateNewFoodIconPreview()" style="flex:1;">
+                    <option value="burger">🍔 Burger ko'rinishi</option>
+                    <option value="lavash">🌯 Lavash ko'rinishi</option>
+                    <option value="osh">🍲 Osh/Plov ko'rinishi</option>
+                    <option value="somsa">🥟 Somsa ko'rinishi</option>
+                    <option value="salad">🥗 Salat ko'rinishi</option>
+                    <option value="drink">🥤 Ichimlik ko'rinishi</option>
+                    <option value="dessert">🍰 Shirinlik ko'rinishi</option>
+                    <option value="plate">🍽 Umumiy taom ko'rinishi</option>
+                </select>
+                <div id="new-food-icon-preview" style="width:44px; height:44px; flex-shrink:0; border-radius:10px; overflow:hidden; background:#2b2b2b; border:1px solid #444;"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="food-image-upload" style="display:flex; position:static; width:70px; height:70px;" onclick="triggerNewFoodImageUpload()">
+                <span id="new-food-image-label-2">+ Qo'shish</span>
+            </div>
         </div>
         <button class="btn-add-food" onclick="addNewFood()">Menyuga qo'shish</button>
 
@@ -608,15 +626,15 @@
         let nextFoodNum = 5;
         let FOOD_ITEMS = [
             { id: 'food-1', name: 'Cheeseburger', price: 28000, category: 'fastfood', icon: 'burger', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Cheeseburger.jpg?width=300' },
-            { id: 'food-2', name: 'Lavash Big', price: 34000, category: 'fastfood', icon: 'lavash', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Jerusalem_shawarma.jpg?width=300' },
+            { id: 'food-2', name: 'Lavash Big', price: 34000, category: 'fastfood', icon: 'lavash', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Shawarma.png?width=300' },
             { id: 'food-3', name: "To'y Oshi", price: 35000, category: 'milliy', icon: 'osh', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Plov_Tashkent.jpg?width=300' },
             { id: 'food-4', name: "Go'shtli Somsa", price: 10000, category: 'milliy', icon: 'somsa', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Uzbek_samsa.jpg?width=300' },
-            { id: 'food-5', name: 'Achchiq-chuchuk salat', price: 16000, category: 'salatlar', icon: 'salad', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Tomato_cucumber_salad.jpg?width=300' },
+            { id: 'food-5', name: 'Achchiq-chuchuk salat', price: 16000, category: 'salatlar', icon: 'salad', image: "https://commons.wikimedia.org/wiki/Special:FilePath/'Achchiq-chuchuk'_-_uzbek_salad.jpg?width=300" },
             { id: 'food-6', name: 'Sezar salat', price: 24000, category: 'salatlar', icon: 'salad', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Caesar_salad_(2).jpg?width=300' },
-            { id: 'food-7', name: "Kola 0.5L", price: 9000, category: 'ichimliklar', icon: 'drink', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Tumbler_of_cola_with_ice.jpg?width=300' },
-            { id: 'food-8', name: 'Issiq choy (choynak)', price: 6000, category: 'ichimliklar', icon: 'drink', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Cup_of_black_tea.png?width=300' },
+            { id: 'food-7', name: "Kola 0.5L", price: 9000, category: 'ichimliklar', icon: 'drink', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Short_glass_of_cola.jpg?width=300' },
+            { id: 'food-8', name: 'Issiq choy (choynak)', price: 6000, category: 'ichimliklar', icon: 'drink', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Tea_Cup.jpg?width=300' },
             { id: 'food-9', name: 'Napoleon tort', price: 18000, category: 'shirinliklar', icon: 'dessert', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Napoleon_cake_02.JPG?width=300' },
-            { id: 'food-10', name: 'Muzqaymoq', price: 12000, category: 'shirinliklar', icon: 'dessert', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Vanilla_ice_cream_cone.JPG?width=300' }
+            { id: 'food-10', name: 'Muzqaymoq', price: 12000, category: 'shirinliklar', icon: 'dessert', image: 'https://commons.wikimedia.org/wiki/Special:FilePath/Ice-cream.jpg?width=300' }
         ];
         nextFoodNum = 11;
 
@@ -732,8 +750,15 @@
                     const imageHtml = item.image
                         ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML=getIconSVG('${item.icon}')">`
                         : getIconSVG(item.icon);
+                    const uploadPreview = item.image
+                        ? `<img src="${item.image}" alt="${item.name}">`
+                        : `<span>+ Qo'shish</span>`;
                     card.innerHTML = `
-                        <div class="food-image">${imageHtml}</div>
+                        <div class="food-image-wrap">
+                            <div class="food-image">${imageHtml}</div>
+                            <div class="food-image-upload" onclick="triggerImageUpload('${item.id}')">${uploadPreview}</div>
+                            <input type="file" accept="image/*" id="upload-${item.id}" style="display:none" onchange="handleImageUpload(event, '${item.id}')">
+                        </div>
                         <div class="food-details">
                             <div class="food-title">${item.name}</div>
                             <div class="food-price" id="price-${item.id}">${item.price.toLocaleString('ru-RU')} so'm</div>
@@ -751,12 +776,42 @@
         }
 
         /* ---------- ADMIN: YANGI TAOM QO'SHISH ---------- */
+        /* ---------- YANGI TAOM QO'SHISH: rasm yuklash ---------- */
+        let newFoodImageData = '';
+
+        function triggerNewFoodImageUpload() {
+            document.getElementById('new-food-image-file').click();
+        }
+
+        function handleNewFoodImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showToast("Iltimos, rasm fayl tanlang");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                newFoodImageData = e.target.result;
+                const previewHtml = `<img src="${newFoodImageData}" style="width:100%;height:100%;object-fit:cover;">`;
+                const label1 = document.getElementById('new-food-image-label');
+                if (label1) label1.parentElement.innerHTML = previewHtml;
+                const label2 = document.getElementById('new-food-image-label-2');
+                if (label2) label2.parentElement.innerHTML = previewHtml;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateNewFoodIconPreview() {
+            const icon = document.getElementById('new-food-icon').value;
+            document.getElementById('new-food-icon-preview').innerHTML = getIconSVG(icon);
+        }
+
         function addNewFood() {
             const name = document.getElementById('new-food-name').value.trim();
             const price = parseInt(document.getElementById('new-food-price').value, 10);
             const category = document.getElementById('new-food-category').value;
             const icon = document.getElementById('new-food-icon').value;
-            const image = document.getElementById('new-food-image').value.trim();
 
             if (!name) { showToast("Iltimos, taom nomini kiriting."); return; }
             if (isNaN(price) || price <= 0) { showToast("Iltimos, to'g'ri narx kiriting."); return; }
@@ -764,12 +819,17 @@
             const id = 'food-' + nextFoodNum;
             nextFoodNum++;
             const newItem = { id, name, price, category, icon };
-            if (image) newItem.image = image;
+            if (newFoodImageData) newItem.image = newFoodImageData;
             FOOD_ITEMS.push(newItem);
 
             document.getElementById('new-food-name').value = '';
             document.getElementById('new-food-price').value = '';
-            document.getElementById('new-food-image').value = '';
+            newFoodImageData = '';
+            document.querySelectorAll('.admin-settings .food-image-upload').forEach((box, idx) => {
+                box.innerHTML = idx === 0
+                    ? `<span id="new-food-image-label">+ Qo'shish</span>`
+                    : `<span id="new-food-image-label-2">+ Qo'shish</span>`;
+            });
 
             renderFoodList();
             showToast(name + " menyuga qo'shildi ✅");
@@ -787,6 +847,30 @@
             renderFoodList();
             updateCartUI();
             showToast(item.name + " menyudan o'chirildi");
+        }
+
+        /* ---------- ADMIN: TAOM RASMINI QO'LDA YUKLASH ---------- */
+        function triggerImageUpload(id) {
+            document.getElementById('upload-' + id).click();
+        }
+
+        function handleImageUpload(event, id) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showToast("Iltimos, rasm fayl tanlang");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const item = FOOD_ITEMS.find(f => f.id === id);
+                if (item) {
+                    item.image = e.target.result;
+                    renderFoodList();
+                    showToast(item.name + " rasmi yangilandi ✅");
+                }
+            };
+            reader.readAsDataURL(file);
         }
 
         /* ---------- ADMIN REJIM (yashirin — faqat sizga) ---------- */
@@ -840,6 +924,7 @@
             document.getElementById('click-merchant-id').value = CLICK_MERCHANT_ID;
             document.getElementById('settings-contact-phone').value = CONTACT_PHONE;
             document.getElementById('settings-contact-hours').value = CONTACT_HOURS;
+            updateNewFoodIconPreview();
             showToast('✅ Admin rejimi yoqildi');
         }
 
